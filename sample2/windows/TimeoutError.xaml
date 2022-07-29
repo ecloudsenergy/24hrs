@@ -1,0 +1,62 @@
+﻿<Window x:Class="sample2.windows.TimeoutError"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:sample2.windows"
+        xmlns:buttons="clr-namespace:sample2.User_Controls"
+        mc:Ignorable="d"
+        Title="TimeoutError" WindowStartupLocation="CenterScreen" WindowStyle="None"
+         SizeToContent="WidthAndHeight">
+    <Border Height="260" Width="400"
+            CornerRadius="6"
+                BorderBrush="OliveDrab"
+                BorderThickness="3"
+                Padding="2" 
+                    Background="LightGray">
+        <StackPanel Orientation="Vertical">
+            <Border Width="200"
+                Height="40"
+            CornerRadius="25"
+                BorderBrush="OrangeRed"
+                BorderThickness="1"
+                Padding="2" Margin="0,25,0,0" HorizontalAlignment="Center">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Border.Effect">
+                            <Setter.Value>
+                                <DropShadowEffect Color="Black" Direction="-90" ShadowDepth="4" BlurRadius="5" Opacity="0.5" />
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                </Border.Style>
+
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="1,0" EndPoint="1,1">
+
+                        <GradientStop Color="White" Offset="0" />
+                        <GradientStop x:Name="gradient_color" Color="Orange" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="10">
+
+                    <TextBlock x:Name="Box_Header" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="16" Foreground="Navy" FontWeight="ExtraBold" HorizontalAlignment="Center"> Time Out Error!!</TextBlock>
+                    
+                </StackPanel>
+            </Border>
+            <TextBlock x:Name="Message_Content" Margin="0,25,0,0"  VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" FontSize="16" Foreground="Black"
+                       FontWeight="ExtraBold" HorizontalAlignment="Center"> Sorry for the inconvenience!! Try again later!!</TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="0,25,0,0" HorizontalAlignment="Center">
+                <Grid Margin="0,0,0,0">
+                    <buttons:Navigation_Buttons Width="150" x:Name="SendToNextScreen" Height="50"/>
+                </Grid>
+                <Grid >
+                    <buttons:Navigation_Buttons Margin="25,0,0,0" Width="150" x:Name="Retry" Height="50" Visibility="Visible"/>
+                </Grid>
+
+            </StackPanel>
+            
+        </StackPanel>
+    </Border>
+</Window>

@@ -1,0 +1,104 @@
+﻿<Window x:Class="sample2.BillPrint"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:sample2"
+        mc:Ignorable="d" WindowStyle="None"
+        Width="500"
+        >
+
+    <StackPanel x:Name="TextBlock1" Background="White" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="30,0,0,0" Width="230">
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="6*"/>
+                <ColumnDefinition Width="5*"/>
+
+            </Grid.ColumnDefinitions>
+            <Image  x:Name="company_logo" Source="/images/24hrslogo.bmp" HorizontalAlignment="Left" RenderTransformOrigin="0.517,1.07" Margin="0,0,0,-0.2" Width="72"/>
+            <TextBlock VerticalAlignment="Center" TextDecorations="Underline" TextWrapping="Wrap" HorizontalAlignment="Center" FontWeight="Bold"
+                  TextAlignment="Right" Text="Tax-Invoice" Width="130" Grid.ColumnSpan="2" Margin="91,21,9.4,-0.2"/>
+        </Grid>
+        <StackPanel Background="Black" Height="1" />
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Background="Black" Height="1" />
+            <Grid Grid.Row="1" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel x:Name="Left_Top_Column" Grid.Column="0" />
+                <StackPanel x:Name="Right_Top_Column" Grid.Column="1" />
+            </Grid>
+        </Grid>
+        <StackPanel Background="Black" Height="1" />
+        <StackPanel x:Name="items" />
+        <StackPanel Background="Black" Height="1" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Left" FontWeight="Bold" TextAlignment="Center"
+                       ><Run Text="Grand Total"/></TextBlock>
+            <TextBlock x:Name="Grand_Total" Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Right" FontWeight="Bold" TextAlignment="Center"
+                       ><Run Text="₹0.00"/></TextBlock>
+        </Grid>
+        <StackPanel Background="Black" Height="1" />
+        <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" FontWeight="Bold" TextAlignment="Center"
+                       ><Run Text="Tax Summary"/></TextBlock>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel x:Name="Left_Bottom_Column" Grid.Column="0" />
+            <StackPanel x:Name="Right_Bottom_Column" Grid.Column="1" />
+        </Grid>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Left" FontWeight="Bold" TextAlignment="Center"
+                       ><Run Text="Total Tax"/></TextBlock>
+            <TextBlock x:Name="Total_Ex_Tax" Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Right" FontWeight="Bold" TextAlignment="Center"
+                       ><Run Text="₹0.00"/></TextBlock>
+        </Grid>
+        <StackPanel Background="Black" Height="1" />
+
+        <StackPanel Background="Black" Height="1" />
+        <Image Source="/images/thankyou.bmp" Height="30"/>
+
+        <StackPanel Orientation="Vertical">
+
+
+            <TextBlock x:Name="address"  VerticalAlignment="Center" TextWrapping="Wrap" 
+                       HorizontalAlignment="Center"  TextAlignment="Center" FontSize="9" Width="162"
+                       ><Run Text="81, West Venkatasamy Road, RS Puram, Coimbatore - 641 002"/></TextBlock>
+            <TextBlock x:Name="GST_Ph_No"  VerticalAlignment="Center" TextWrapping="Wrap" 
+                       HorizontalAlignment="Center"  TextAlignment="Center" FontSize="9" Width="162" 
+                       ><Run Text="GSTIN:33AXEPV9801H1Z9"/></TextBlock>
+            
+            <TextBlock HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Center" 
+                       TextDecorations="Underline" TextWrapping="Wrap"  FontWeight="Bold" FontSize="9" Width="195"
+                       ><Run Text="www.24hrsvending.com"/></TextBlock>
+
+
+        </StackPanel>
+
+
+
+
+
+
+    </StackPanel>
+
+</Window>

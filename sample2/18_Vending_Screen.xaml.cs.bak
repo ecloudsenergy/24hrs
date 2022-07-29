@@ -1,0 +1,1234 @@
+﻿using sample2.models;
+using sample2.remote;
+using sample2.User_Controls;
+using System;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Text;
+using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
+
+namespace sample2
+{
+    /// <summary>
+    /// Interaction logic for _18_Vending_Screen.xaml
+    /// </summary>
+    public partial class _18_Vending_Screen : Page
+    {
+        Page previous_page;
+        SerialPort PLC = new SerialPort();
+        private delegate string Output_Result(List<byte> output_data);
+        private static TimeZoneInfo INDIAN_ZONE = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+        DateTime indianTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, INDIAN_ZONE);
+       
+        Output_Result result_PLC, result_ND, result_CD;
+        List<byte> response = new List<byte>();
+        int product_quantities = 0;
+        List<cart_item> cart_items;
+        int product_number = 0, cell_number = 0, /*TODO: Initialize to zero*/ item_count = 0, previous_cell_number = 0, temp_cell_number = 0;
+        int[] total_separated;
+        SerialPort ND = new SerialPort();
+        SerialPort CD = new SerialPort();
+        byte coin_qty = 0x00;
+        bool coin_hopper_check = false;
+        List<byte> coin_byte_list = new List<byte>(), plc_byte_list = new List<byte>();
+        string class_name = "" ; string bill_number = "";
+        DispatcherTimer dt = new DispatcherTimer();
+        List<product_count_ledger> product_ledger = new List<product_count_ledger>();
+        CellModel tray_model = new CellModel();
+        List<List<int>> product_track = new List<List<int>>();
+        
+
+        public _18_Vending_Screen(Page previous_page, List<cart_item> cart_items, string order_amount,
+            string order_quantity, string received_amount, string class_name, string bill_number)
+        {
+            InitializeComponent();
+            Config_PLC();
+            Config_ND();
+            Config_CD();
+            this.bill_number = bill_number;
+            this.previous_page = previous_page;
+            this.order_amount.Text = order_amount;
+            this.order_quantity.Text = order_quantity;
+            this.amount_paid.Text = received_amount;
+            this.cart_items = cart_items;
+            int amt_paid = Int32.Parse(split_amount(this.amount_paid.Text));
+            int bill_amount = Int32.Parse(split_amount(this.order_amount.Text));
+            int total = amt_paid - bill_amount;
+            total_separated = splited_amount(total);
+            coin_qty = (byte)total_separated[2];
+            this.class_name = class_name;
+            foreach (cart_item item in cart_items)
+            {
+                cart_item addItem = new cart_item(item);
+                this.cart.Children.Add(addItem);
+            }
+            if(class_name == "cash")
+            {
+                String formatdate = indianTime.ToString("yyyy-MM-dd HH:mm:SS");
+                if (total_separated[1] > 0)
+                {
+                    int saved_successfully = 0;
+                    CurrencyTransactionModel lastTransDetails = SqliteChange.getLastCurrencyTransaction(10, "ND");
+                    saved_successfully += SqliteChange.CurrencyTransactionDetails(10, bill_number, total_separated[1],
+                                      formatdate, "Customer", "Debit", lastTransDetails.Cr_Closing_Balance_Qty,
+                                      lastTransDetails.Cr_Closing_Balance_Qty + total_separated[1], "ND");
+                }
+                if(total_separated[2] > 0)
+                {
+                    int saved_successfully = 0;
+                    CurrencyTransactionModel lastTransDetails = SqliteChange.getLastCurrencyTransaction(1, "CD");
+                    saved_successfully += SqliteChange.CurrencyTransactionDetails(10, bill_number, total_separated[2],
+                                      formatdate, "Customer", "Debit", lastTransDetails.Cr_Closing_Balance_Qty,
+                                      lastTransDetails.Cr_Closing_Balance_Qty + total_separated[2], "CD");
+                }
+            }
+
+            start_next_product_delivery();
+        }
+
+        void start_next_product_delivery()
+        {
+            if (item_count < cart_items.Count)
+            {
+                if (product_quantities <= 0)
+                {
+                    cart_item product = cart_items[item_count];
+                    tray_model = SqliteDataAccess.getProductCellDetails(product.Product_Name.Text);
+                    byte[] product_image = SqliteDataAccess.getProductImage(product.Product_Name.Text);
+                    this.product_image.Source = SqliteChange.byteArrayToImage(product_image);
+                    this.product_name.Text = product.Product_Name.Text;
+                    this.order_qty.Text = product.Product_quantity.Text;
+                    product_quantities = Int32.Parse(this.order_qty.Text);
+                    SqliteChange.UpdateCellTable(tray_model.CT_Col_No, tray_model.CT_Row_No, tray_model.CT_Balance_Qty - product_quantities);
+                    this.dispensed_qty.Text = "0";
+                    product_count_ledger new_product = new product_count_ledger();
+                    new_product.Pr_Name = product.Product_Name.Text;
+                    new_product.Pr_Qty = product_quantities;
+                    product_ledger.Add(new_product);
+                    product_track.Add(new List<int>());
+                    product_number++;
+
+                }
+                previous_cell_number = cell_number;
+                cell_number = row_col_covertion(tray_model.CT_Row_No, tray_model.CT_Col_No);
+                //send the status request method and the check status method.
+                if (cell_number > 0 && cell_number <= 64)
+                    PLC_CmdSend(send_PLC_Register_Status_request(), response_register_status_PLC);
+                
+                item_count++;
+               
+            }
+            else
+            {
+                if (class_name == "cash")
+                {
+                    if (total_separated[1] > 0)
+                    {
+                        this.product_vending_status.Text = "Dispensing Cash...";
+                        Thread.Sleep(2000);
+                        ND_CmdSend(send_ND_request(get_request("S")), response_ND_status);
+                    }
+                    else if (coin_qty > 0)
+                    {
+                        Thread.Sleep(2000);
+                        CD_CmdSend(send_CD_request(0x12, 0x00), reset_response_CD);
+                    }
+                    else
+                    {
+                        ND.Close();
+                        CD.Close();
+                        PLC.Close();
+                        Thread.Sleep(3000);
+                        sendToNextScreen();
+                    }
+                }
+
+                else if (class_name == "card" || class_name == "upi")
+                {
+                    Thread.Sleep(3000);
+                    sendToNextScreen();
+                }
+                else this.product_vending_status.Text = "Error: class name not mentioned. class name: " + class_name;
+            }
+        }
+
+
+        void sendToNextScreen()
+        {
+            _19_Bill_Printing next_page = new _19_Bill_Printing(product_ledger, bill_number);
+            this.NavigationService.Navigate(next_page);
+        }
+
+
+        #region Coin Hopper
+
+
+        private void timerStopped_Coin()
+        {
+            dt.Stop();
+            dt = new DispatcherTimer();
+        }
+
+        private void timerStarted_Coin()
+        {
+            dt.Tick += delayCounter_coin;
+            dt.Interval = new TimeSpan(0, 0, 0,0,400);
+            dt.Start();
+
+        }
+
+        private void delayCounter_coin(object sender, EventArgs e)
+        {
+            if (coin_hopper_check)
+                CD_Cmd();
+            else         
+                timerStopped_Coin();
+        }
+
+        private void Config_CD()
+        {
+            //Sets up serial port
+            CD.PortName = SqliteDataAccess.getPort("CD");
+            CD.BaudRate = 9600; // baud rate - 9600 for note dispenser, bill validator and coin hopper, 19200 for PLC
+            CD.Handshake = Handshake.None;
+            CD.Parity = Parity.Even;
+            CD.DataBits = 8;
+            CD.StopBits = StopBits.One;
+            CD.ReadTimeout = 1000;
+            CD.WriteTimeout = 50;
+            CD.DataReceived += new SerialDataReceivedEventHandler(Recieve_CD);
+        }
+
+        #region CD_Recieving
+        bool start_bit = false;
+        private void Recieve_CD(object sender, SerialDataReceivedEventArgs e)
+        {
+            
+            // Collecting the characters received to our 'buffer' (string).
+            if (coin_byte_list[3] == 0x12) coin_hopper_check = false;
+            int bytes = CD.BytesToRead;
+            byte[] output_data = new byte[bytes];
+            CD.Read(output_data, 0, bytes);
+            foreach (byte item in output_data)
+            {
+                if (item == 0x05) start_bit = true;
+                if (start_bit)
+                    response.Add(item);
+            }
+
+            byte checksum = new byte();
+            if (response.Count >= 6)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    checksum += response[i];
+                }
+
+                if (checksum == response[5])
+                {
+                    coin_hopper_check = false;
+                    response.RemoveRange(6, response.Count - 6);
+                    Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateUiTextDelegate(WriteData_CD), response);
+                    response = new List<byte>();
+                    start_bit = false;
+                }
+            }
+            else if (result_CD == reset_response_CD)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateUiTextDelegate(WriteData_CD), response);
+                response = new List<byte>();
+                start_bit = false;
+            }
+            else
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateUiTextDelegate(WriteErrorData_CD), response);
+
+            }
+        }
+
+        private void WriteData_CD(List<byte> output_data)
+        {
+            Display_CD_Status(result_CD(output_data));
+        }
+
+        private void WriteErrorData_CD(List<byte> output_data)
+        {
+            string respo = "";
+            foreach (byte item in output_data)
+            {
+                respo += item + "-";
+            }
+            this.product_vending_status.Text = respo + "---";
+        }
+
+        #endregion
+
+        #region CD_Sending
+        private void CD_CmdSend(List<byte> hexstring, Output_Result result_method)
+        {
+            if (!coin_hopper_check)
+            {
+                try
+                {
+                   // response = new List<byte>();
+                    result_CD = result_method;
+                    coin_byte_list = hexstring;
+                    if (!CD.IsOpen) CD.Open();
+                    timerStarted_Coin();
+                    
+                    //string output_val = "";
+
+                    foreach (byte hexval in hexstring)
+                    {
+                        byte[] _hexval = new byte[] { hexval };
+                        CD.Write(_hexval, 0, 1);
+                        //output_val += hexval.ToString("X2") + " ";
+                        Thread.Sleep(1);
+                    }
+                    coin_hopper_check = true;
+                }
+                catch (Exception ex)
+                {
+                    product_vending_status.Text = "CD Error - " + ex.Message + "!! Call the support: " + SqliteDataAccess.getHelplineNumber();
+                    //button_visible();
+                }
+            }
+        }
+
+        private void CD_Cmd()
+        {
+            try
+            {
+               // response = new List<byte>();
+                if (!CD.IsOpen) CD.Open();
+                //string output_val = "";
+
+                foreach (byte hexval in coin_byte_list)
+                {
+                    byte[] _hexval = new byte[] { hexval };
+                    CD.Write(_hexval, 0, 1);
+                    //output_val += hexval.ToString("X2") + " ";
+                    Thread.Sleep(1);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                product_vending_status.Text = "CD Error - " + ex.Message + "!! Call the support: " + SqliteDataAccess.getHelplineNumber();
+                //button_visible();
+            }
+        }
+
+        #endregion
+
+        #region Coin Dispsenser Request methods
+        List<byte> send_CD_request(byte command, byte data)
+        {
+            List<byte> hexstring = new List<byte>();
+            hexstring.Add(0x05);
+            hexstring.Add(0x10);
+            hexstring.Add(0x00);
+            hexstring.Add(command);
+            hexstring.Add(data);
+            byte checksum = new byte();
+            foreach (byte item in hexstring) checksum += item;
+            hexstring.Add(checksum);
+            return hexstring;
+        }
+        #endregion
+
+        #region Coin Dispsenser Response methods
+
+        private string response_CD(List<byte> output_data)
+        {
+            string data = "";
+            byte checksum = new byte();
+            for (int i=0; i< output_data.Count -1;i++) checksum += output_data[i];
+            if(output_data[output_data.Count - 1] == checksum)
+            {
+                byte command, data_byte;
+                if (output_data.Count == 6)
+                {
+                    command = output_data[3];
+                    data_byte = output_data[4];
+                }
+                else
+                {
+                    command = output_data[2];
+                    data_byte = output_data[3];
+                }
+                
+
+                switch (command)
+                {
+                    case 0x04:
+                        data = display_error_CD(data_byte);
+                        break;
+                    case 0x07:
+                        data = "SS";
+                        break;
+                    case 0x08:
+                        data = "S";
+                        break;
+                    case 0xAA:
+                        data = "ACK";
+                        break;
+                    case 0xBB:
+                        data = "B";
+                        break;
+                    default:
+                        data = "a: " + command;
+                        break;
+                }
+            }
+            else
+            {
+                foreach (byte item in output_data)
+                    data += item;
+            }
+
+            return data;
+        }
+
+        private string reset_response_CD(List<byte> output_data)
+        {
+           
+            return "RESET";
+        }
+
+        #endregion
+
+
+        private string display_error_CD(byte data_byte)
+        {
+            string return_data = "";
+            switch (data_byte)
+            {
+                case 0x80:
+                    return_data = "NP";
+                    break;
+
+                case 0x40:
+                    return_data = "NP";
+                    break;
+
+                default:
+                    return_data = "NP";
+                    break;
+            }
+
+            return return_data;
+        }
+
+        private void Display_CD_Status(string display_data)  
+        {
+            switch (display_data)
+            {
+                case "NP":
+                    this.product_vending_status.Text = "Dispensing Coin...";
+                    CD_CmdSend(send_CD_request(0x10, coin_qty), response_CD);
+                    break;
+                case "RESET":
+                    this.product_vending_status.Text = "Dispensing Coin...";
+                    Thread.Sleep(2000);
+                    CD_CmdSend(send_CD_request(0x11, 0x00), response_CD);
+                    break;
+                case "B":
+                    this.product_vending_status.Text = "Dispensing Coin...";
+                    Thread.Sleep(1000);
+                    CD_CmdSend(send_CD_request(0x10, coin_qty), response_CD);
+                    break;
+               
+                case "ACK":
+                    this.product_vending_status.Text = "Coins Dispensed Successfully...";
+                    coin_qty = 0;
+                    start_next_product_delivery();
+                    break;
+                default:
+                    this.product_vending_status.Text = "Unknown Response: " + display_data + ". Contact Support: " + SqliteDataAccess.getHelplineNumber();
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Note Dispenser
+
+        private int[] splited_amount(int total_amount)
+        {
+            int[] separated = new int[3];
+            separated[0] = total_amount / 100;
+            total_amount -= (separated[0] * 100);
+            separated[1] = total_amount / 10;
+            total_amount -= (separated[1] * 10);
+            separated[2] = total_amount / 1;
+            return separated;
+        }
+
+        private string split_amount(string amount)
+        {
+            string[] split_amount = amount.Split(' ');
+            return split_amount[1];
+        }
+
+        private void Config_ND()
+        {
+            //Sets up serial port
+            ND.PortName = SqliteDataAccess.getPort("ND");
+            ND.BaudRate = 9600; // baud rate - 9600 for both note dispenser, bill validator and coin hopper, 19200 for PLC
+            ND.Handshake = Handshake.None;
+            ND.Parity = Parity.None; // for Note Dispenser and PLC
+            ND.DataBits = 8;
+            ND.StopBits = StopBits.One;
+            ND.ReadTimeout = 1000;
+            ND.WriteTimeout = 50;
+            ND.DataReceived += new SerialDataReceivedEventHandler(Recieve_ND);
+        }
+
+        #region ND_Recieving
+
+        private void Recieve_ND(object sender, SerialDataReceivedEventArgs e)
+        {
+            // Collecting the characters received to our 'buffer' (string).
+            int bytes = ND.BytesToRead;
+            byte[] output_data = new byte[bytes];
+            ND.Read(output_data, 0, bytes);
+            foreach (byte item in output_data)
+            {
+                response.Add(item);
+            }
+            if(response.Count == 10)
+            {
+                byte checksum = new byte();
+                for (int i = 0; i < response.Count - 2; i++)
+                {
+                    checksum += response[i];
+                }
+
+                if (checksum == response[response.Count - 2])
+                {
+                    Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateUiTextDelegate(WriteData_ND), response);
+                    response = new List<byte>();
+                }
+            }
+            else if(response.Count == 1)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateUiTextDelegate(WriteData_ND), response);
+                response = new List<byte>();
+            }
+            
+        }
+
+
+        private void WriteData_ND(List<byte> output_data)
+        {
+            Display_ND_Status(result_ND(output_data));
+        }
+        #endregion
+
+        #region Note Dispsenser Request methods
+        List<byte> send_ND_request(byte[] data_content)
+        {
+            List<byte> hexstring = new List<byte>();            
+            hexstring.Add(0x02);
+            for (int i = 1; i <= data_content.Length; i++) hexstring.Add(data_content[i - 1]);
+            byte checksum = new byte();
+            foreach (byte item in hexstring) checksum += item;
+            hexstring.Add(checksum);
+            hexstring.Add(0x03);
+
+            return hexstring;
+        }
+        #endregion
+
+        #region Note Dispsenser Response methods
+
+        private string response_ND_Dispense_status(List<byte> output_data)
+        {
+            string data = "";
+            if (output_data.Count == 1)
+            {
+                if (output_data[0] == 0x06)
+                    data = "B1";
+                else data = "EB1 " + output_data[0] ;
+            }
+            else
+            {
+                if (output_data[3] == 0x62)
+                    data = "B1";
+                else if (output_data[3] == 0x45)
+                {
+                    data = "e";
+                    error_list(output_data[4], data);
+                }
+                else data = "EB2"; 
+            }
+            return data;
+        }
+        private string response_ND_status(List<byte> output_data)
+        {
+            string result_data = "";
+            if (output_data.Count == 10)
+                if (output_data[3] == 0x73)
+                {
+                    switch (output_data[4])
+                    {
+                        case 0x77:
+                            result_data = "w";
+                            break;
+                        case 0x72:
+                            result_data = "r";
+                            break;
+                        case 0x65:
+                            result_data = "e";
+                            break;
+                        case 0x74:
+                            result_data = "t";
+                            break;
+                    }
+                    if (result_data == "e")
+                        error_list(output_data[5], result_data);
+                }
+                else
+                {
+                    foreach (var byte_data in output_data)
+                    {
+                        result_data += byte_data;
+                    }
+                }
+            return result_data;
+        }
+
+        #endregion
+
+        private byte[] get_request(string request_code, int Hundrenth = 0, int Tenth = 0, int oneth = 0)
+        {
+            byte[] data_content;
+            switch (request_code)
+            {
+                case "B":
+                    data_content = Encoding.ASCII.GetBytes("00" + request_code + "00"+ Hundrenth + Tenth);
+                    break;
+
+                default:
+                    data_content = Encoding.ASCII.GetBytes("00S0000");
+                    break;
+            }
+            return data_content;
+        }
+
+        private void Display_ND_Status(string display_data)
+        {
+
+            if (display_data.Contains("e"))
+            {
+                string[] separated = display_data.Split('-');
+                display_data = separated[1];
+                this.product_vending_status.Text = error_display(display_data);
+                //button_visible();
+            }
+            else
+            switch (display_data)
+            {
+                    case "B1":
+                        this.product_vending_status.Text = "Cash Dispensed Successfully!!";
+                        
+                        start_next_product_delivery();
+                        break;
+
+                    case "EB1":
+                        this.product_vending_status.Text = "EB1 Unknown Error. Contact support: " + SqliteDataAccess.getHelplineNumber();
+                        //button_visible();
+                        break;
+                    case "EB2":
+                        this.product_vending_status.Text += "EB2 Unknown Error. Contact support: " + SqliteDataAccess.getHelplineNumber();
+                        //button_visible();
+                        break;
+                    case "r":
+                        ND_CmdSend(send_ND_request(get_request("B", 0, total_separated[1], total_separated[2])), response_ND_Dispense_status);
+                        total_separated[1] = 0; total_separated[2] = 0;
+                        break;
+                    case "w":
+                        Thread.Sleep(1000);
+                        ND_CmdSend(send_ND_request(get_request("S")), response_ND_status);
+                        break;
+                    case "t":
+                        this.product_vending_status.Text = "Test Mode. Contact support: " + SqliteDataAccess.getHelplineNumber();
+                        break;
+                    default:
+                        this.product_vending_status.Text = "Unknown Error" + display_data + ". Contact support: " + SqliteDataAccess.getHelplineNumber();
+                        //button_visible();
+                        break;
+                }
+        }
+
+        private void error_list(byte error_code, string result_data)
+        {
+            switch (error_code)
+            {
+                case 0x31:
+                    result_data += "-No bills dispensed";
+                    break;
+                case 0x32:
+                    result_data += "-Jam";
+                    break;
+                case 0x33:
+                    result_data += "-Chain";
+                    break;
+                case 0x34:
+                    result_data += "-Half";
+                    break;
+                case 0x35:
+                    result_data += "-Short";
+                    break;
+                case 0x36:
+                    result_data += "-No bills dispensed by start button";
+                    break;
+                case 0x37:
+                    result_data += "-Double";
+                    break;
+                case 0x38:
+                    result_data += "-Over 4000 pcs";
+                    break;
+                case 0x39:
+                    result_data += "-Communication Error";
+                    break;
+                case 0x41:
+                    result_data += "-Encoder Error";
+                    break;
+                case 0x42:
+                    result_data += "-IR LED L Error";
+                    break;
+                case 0x43:
+                    result_data += "-IR LED R Error";
+                    break;
+                case 0x44:
+                    result_data += "-IR Sensor L Error";
+                    break;
+                case 0x46:
+                    result_data += "-IR Sensor R Error";
+                    break;
+                case 0x47:
+                    result_data += "-IR Sensor Different Error";
+                    break;
+                case 0x48:
+                    result_data += "-Bill Low Level Warning";
+                    break;
+                case 0x49:
+                    result_data += "-Low Power Error";
+                    break;
+                default:
+                    result_data += "-0";
+                    break;
+            }
+        }
+        private string error_display(string result_data)
+        {
+            string display_string = "";
+            string support = "Please Call the support number: " + SqliteDataAccess.getHelplineNumber();
+            switch (result_data)
+            {
+                case "No bills dispensed":
+                    display_string = "No bills dispensed. "+ support;
+                    break;
+                case "Jam":
+                    result_data += "Currency Jammed. " + support;
+                    break;
+                case "Chain":
+                    result_data += "Chain Currency. " + support;
+                    break;
+                case "Half":
+                    result_data += "Half Currency. " + support;
+                    break;
+                case "Short":
+                    result_data += "Short Currency. " + support;
+                    break;
+                case "No bills dispensed by start button":
+                    result_data += "No bills dispensed by start button. "+support;
+                    break;
+                case "Double":
+                    result_data += "Double notes. "+support;
+                    break;
+                case "Over 4000 pcs":
+                    result_data += "Over 4000 pcs. "+ support;
+                    break;
+                case "Communication Error":
+                    result_data += "Communication Error. " + support;
+                    break;
+                case "Encoder Error":
+                    result_data += "Encoder Error. " + support;
+                    break;
+                case "IR LED L Error":
+                    result_data += "IR LED L Error. " + support;
+                    break;
+                case "IR LED R Error":
+                    result_data += "IR LED R Error. " + support;
+                    break;
+                case "IR Sensor L Error":
+                    result_data += "IR Sensor L Error. " + support;
+                    break;
+                case "IR Sensor R Error":
+                    result_data += "IR Sensor R Error. " + support;
+                    break;
+                case "IR Sensor Different Error":
+                    result_data += "IR Sensor Different Error. " + support;
+                    break;
+                case "Bill Low Level Warning":
+                    result_data += "Bill Low Level Warning. " + support;
+                    break;
+                case "Low Power Error":
+                    result_data += "Low Power Error. " + support;
+                    break;
+                default:
+                    result_data += "Unknown Error. " + support;
+                    break;
+            }
+            return display_string;
+        }
+
+
+        #region ND_Sending
+        private void ND_CmdSend(List<byte> hexstring, Output_Result result_method)
+        {
+            
+            try
+            {
+                result_ND = result_method;
+                if (!ND.IsOpen) ND.Open();
+
+                //string output_val = "";
+
+                foreach (byte hexval in hexstring)
+                {
+                    byte[] _hexval = new byte[] { hexval };
+                    ND.Write(_hexval, 0, 1);
+                    //output_val += hexval.ToString("X2") + " ";
+                    Thread.Sleep(1);
+                }
+            }
+            catch (Exception ex)
+            {
+                product_vending_status.Text = "ND Error!!" + ex.Message +" Call the support: " + SqliteDataAccess.getHelplineNumber();
+               // button_visible();
+            }
+            
+        }
+        #endregion
+
+        #endregion
+
+        #region PLC
+
+        private void Config_PLC()
+        {
+            //Sets up serial port
+            PLC.PortName = SqliteDataAccess.getPort("PLC");
+            PLC.BaudRate = 19200; // baud rate - 9600 for both note dispenser, bill validator and coin hopper, 19200 for PLC
+            PLC.Handshake = System.IO.Ports.Handshake.None;
+            PLC.Parity = Parity.None; // for Note Dispenser and PLC
+            PLC.DataBits = 8;
+            PLC.StopBits = StopBits.Two;
+            PLC.ReadTimeout = 1000;
+            PLC.WriteTimeout = 50;
+            PLC.DataReceived += new SerialDataReceivedEventHandler(Recieve_PLC);
+        }
+
+
+        #region PLC_Recieving
+
+        private delegate void UpdateUiTextDelegate(List<byte> output_data);
+        private void Recieve_PLC(object sender, SerialDataReceivedEventArgs e)
+        {
+            // Collecting the characters received to our 'buffer' (string).
+            int bytes = PLC.BytesToRead;
+            byte[] output_data = new byte[bytes];
+            PLC.Read(output_data, 0, bytes);
+            foreach (byte item in output_data)
+            {
+                response.Add(item);
+            }
+            List<byte> hexstring = new List<byte>();
+            for (int i=0; i < response.Count-2; i++)
+            {
+                hexstring.Add(response[i]);
+            }
+            List<byte> CRC_Result = ModRTU_CRC(hexstring);
+            if (response[response.Count - 1] == CRC_Result[0] && response[response.Count - 2] == CRC_Result[1])
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateUiTextDelegate(WriteData), response);
+                response = new List<byte>();
+            }
+        }
+
+
+        private void WriteData(List<byte> output_data)
+        {
+            Display_PLC_Status(result_PLC(output_data));
+        }
+        #endregion
+
+        #region PLC_Sending
+        private void PLC_CmdSend(List<byte> hexstring, Output_Result result_method)
+        {
+            try
+            {
+                result_PLC = result_method;
+                if (!PLC.IsOpen) PLC.Open();
+                string output_val = "";
+                plc_byte_list = hexstring;
+                foreach (byte hexval in hexstring)
+                {
+                    byte[] _hexval = new byte[] { hexval };
+                    PLC.Write(_hexval, 0, 1);
+                    output_val += hexval.ToString("X2") + " ";
+                    Thread.Sleep(1);
+                }
+            }
+            catch (Exception ex)
+            {
+                product_vending_status.Text = "Error!! Call the support: " + SqliteDataAccess.getHelplineNumber();
+                //button_visible();
+            }
+            
+        }
+
+     
+        #endregion  // need to add error status
+
+        #region PLC Request Methods
+
+        List<byte> send_PLC_Register_Status_request()
+        {
+            List<byte> hexstring = new List<byte>();
+            hexstring.Add(0x01);
+            hexstring.Add(0x03);
+            hexstring.Add(0x00);
+            hexstring.Add(0x02);
+            hexstring.Add(0x00);
+            hexstring.Add(0x01);
+            List<byte> CRC_Result = ModRTU_CRC(hexstring);
+            hexstring.Add(CRC_Result[1]); //CRC Big Endian
+            hexstring.Add(CRC_Result[0]);//CRC Big Endian
+
+            return hexstring;
+        }
+        List<byte> send_PLC_Coil_Status_request(int coil_number)
+        {
+            previous_cell_number = coil_number;
+
+            List<byte> hexstring = new List<byte>();
+            if (coil_number > 0 && coil_number <= 64)
+            {
+                hexstring.Add(0x01);
+                hexstring.Add(0x01);
+                hexstring.Add(0x00);
+                hexstring.Add((byte)(0x04 + coil_number));
+                hexstring.Add(0x00);
+                hexstring.Add(0x01);
+                List<byte> CRC_Result = ModRTU_CRC(hexstring);
+                hexstring.Add(CRC_Result[1]); //CRC Big Endian
+                hexstring.Add(CRC_Result[0]);//CRC Big Endian
+            }
+
+            return hexstring;
+        }
+
+        List<byte> send_PLC_Coil_Stop_Status_request(int coil_number)
+        {
+            previous_cell_number = coil_number;
+
+            List<byte> hexstring = new List<byte>();
+            if (coil_number > 0 && coil_number <= 64)
+            {
+                hexstring.Add(0x01);
+                hexstring.Add(0x05);
+                hexstring.Add(0x00);
+                hexstring.Add((byte)(0x04 + coil_number));
+                hexstring.Add(0x00);
+                hexstring.Add(0x00);
+                List<byte> CRC_Result = ModRTU_CRC(hexstring);
+                hexstring.Add(CRC_Result[1]); //CRC Big Endian
+                hexstring.Add(CRC_Result[0]);//CRC Big Endian
+            }
+
+                return hexstring;
+        }
+
+        List<byte> send_PLC_Coil_Wait_Status_request(int coil_number)
+        {
+            product_track[product_number - 1].Add(product_quantities);
+            int total_occurrances = product_track[product_number - 1].FindAll(x => x == product_quantities).Count;
+           
+            List<byte> hexstring = new List<byte>();
+            if (coil_number > 0 && coil_number <= 64 && total_occurrances < 6)
+            {
+                hexstring.Add(0x01);
+                hexstring.Add(0x01);
+                hexstring.Add(0x00);
+                hexstring.Add((byte)(0x04 + coil_number));
+                hexstring.Add(0x00);
+                hexstring.Add(0x01);
+                List<byte> CRC_Result = ModRTU_CRC(hexstring);
+                hexstring.Add(CRC_Result[1]); //CRC Big Endian
+                hexstring.Add(CRC_Result[0]);//CRC Big Endian
+            }
+            else
+            {
+                product_vending_status.Text = "Continous Motor Error! Contact the support team: " + SqliteDataAccess.getHelplineNumber();
+               // button_visible();
+                PLC_CmdSend(send_PLC_Coil_Stop_Status_request(previous_cell_number), response_Coil_Write_PLC);
+            }
+                
+            return hexstring;
+        }
+        List<byte> send_PLC_Coil_Write_request(int coil_number)
+        {
+
+
+            List<byte> hexstring = new List<byte>();
+            if (coil_number > 0 && coil_number <= 64)
+            {
+                hexstring.Add(0x01);
+                hexstring.Add(0x05);
+                hexstring.Add(0x00);
+                hexstring.Add((byte)(0x04 + coil_number));
+                hexstring.Add(0xFF);
+                hexstring.Add(0x00);
+                List<byte> CRC_Result = ModRTU_CRC(hexstring);
+                hexstring.Add(CRC_Result[1]); //CRC Big Endian
+                hexstring.Add(CRC_Result[0]);//CRC Big Endian
+            }
+
+            return hexstring;
+        }
+        List<byte> send_PLC_Register_Write_request()
+        {
+            List<byte> hexstring = new List<byte>();
+            hexstring.Add(0x01);
+            hexstring.Add(0x06);
+            hexstring.Add(0x00);
+            hexstring.Add(0x01);
+            hexstring.Add(0x00);
+            hexstring.Add(0x00);
+            List<byte> CRC_Result = ModRTU_CRC(hexstring);
+            hexstring.Add(CRC_Result[1]); //CRC Big Endian
+            hexstring.Add(CRC_Result[0]);//CRC Big Endian
+
+            return hexstring;
+        }
+
+        List<byte> send_PLC_Feedback_Status()
+        {
+            List<byte> hexstring = new List<byte>();
+            hexstring.Add(0x01);
+            hexstring.Add(0x02);
+            hexstring.Add(0x00);
+            hexstring.Add(0x01);
+            hexstring.Add(0x00);
+            hexstring.Add(0x01);
+            List<byte> CRC_Result = ModRTU_CRC(hexstring);
+            hexstring.Add(CRC_Result[1]); //CRC Big Endian
+            hexstring.Add(CRC_Result[0]);//CRC Big Endian
+
+            return hexstring;
+        }
+
+        List<byte> send_PLC_light_Write_request()
+        {
+            List<byte> hexstring = new List<byte>();
+            hexstring.Add(0x01);
+            hexstring.Add(0x06);
+            hexstring.Add(0x00);
+            hexstring.Add(0x01);
+            hexstring.Add(0x00);
+            hexstring.Add(0x00);
+            List<byte> CRC_Result = ModRTU_CRC(hexstring);
+            hexstring.Add(CRC_Result[1]); //CRC Big Endian
+            hexstring.Add(CRC_Result[0]);//CRC Big Endian
+
+            return hexstring;
+        }
+
+        #endregion
+
+        #region PLC Response Methods
+
+        private string response_register_status_PLC(List<byte> output_data)
+        {
+            string result_data = "";
+            if (output_data[4] == 0) result_data = "R1";
+            else result_data = "R2";
+            return result_data;
+        }
+
+
+        private string response_feedback_status_PLC(List<byte> output_data)
+        {
+            string result_data = "";
+            if (output_data[3] == 0) result_data = "Run";
+            else result_data = "FBE";
+            return result_data;
+        }
+
+        private string response_register_write_PLC(List<byte> output_data)
+        {
+            string result_data = "";
+            if (output_data[4] == 0 && output_data[5] == 0) result_data = "R1";
+            else result_data = "E1";
+            return result_data;
+        }
+        private string response_Coil_status_PLC(List<byte> output_data)
+        {
+            string result_data = "";
+            if (output_data[3] == 0)
+                result_data = "FBC";
+            else
+                result_data = "W";
+            return result_data;
+        }
+
+        private string response_previous_Coil_status_PLC(List<byte> output_data)
+        {
+            string result_data = "";
+            if (output_data[3] == 0)
+                result_data = "R3";
+            else
+                result_data = "W";
+            return result_data;
+        }
+
+        private string response_Coil_Write_PLC(List<byte> output_data)
+        {
+            string result_data = "";
+            if (output_data[4] != 0xFF)
+                result_data = "E1";
+            else result_data = "R1";
+            return result_data;
+        }
+
+        #endregion
+
+        int dispensed_item_quant = 0;
+        private void Display_PLC_Status(string display_data)
+        {
+            switch (display_data)
+            {
+                case "R1":
+                    if (product_quantities > 0)
+                    {
+                        this.dispensed_qty.Text = "" + dispensed_item_quant;
+                        product_vending_status.Text = "Starting...";
+                        if (previous_cell_number > 0)
+                            PLC_CmdSend(send_PLC_Coil_Status_request(previous_cell_number), response_previous_Coil_status_PLC);
+                        else
+                            PLC_CmdSend(send_PLC_Coil_Status_request(cell_number), response_Coil_status_PLC);
+                        product_quantities--; 
+                    }
+                    else { start_next_product_delivery(); dispensed_item_quant = 0; }
+                    break;
+                case "R2":
+                    product_vending_status.Text = "Intialising...";
+                    PLC_CmdSend(send_PLC_Register_Write_request(), response_register_write_PLC);
+                    break;
+                case "R3":
+                    product_vending_status.Text = "Intialising...";
+                    temp_cell_number = previous_cell_number;
+                    PLC_CmdSend(send_PLC_Coil_Status_request(cell_number), response_Coil_status_PLC);
+                    break;
+
+                case "FBC":
+                    product_vending_status.Text = "Intialising...";
+                    PLC_CmdSend(send_PLC_Feedback_Status(), response_feedback_status_PLC);
+                    break;
+
+                case "FBE":
+                    product_vending_status.Text = "Continous Motor Error! FBE! Contact the support team: " + SqliteDataAccess.getHelplineNumber();
+                    //button_visible();
+                    //PLC_CmdSend(send_PLC_Coil_Stop_Status_request(previous_cell_number), response_Coil_Write_PLC);
+                    //SqliteDataAccess.disableAllProducts();
+                    break;
+
+                case "E1":
+                    product_vending_status.Text = "Motor Error! Contact the support team: " + SqliteDataAccess.getHelplineNumber();
+                    //button_visible();
+                    //PLC_CmdSend(send_PLC_Coil_Stop_Status_request(previous_cell_number), response_Coil_Write_PLC);
+                    break;
+                case "Run":
+                    product_vending_status.Text = "Vending...";
+                    PLC_CmdSend(send_PLC_Coil_Write_request(cell_number), response_Coil_Write_PLC);
+                    dispensed_item_quant++;
+
+                    break;
+                case "W":
+                    Thread.Sleep(1000);
+                    product_vending_status.Text = "Vending...";
+                    if (previous_cell_number != temp_cell_number)
+                        PLC_CmdSend(send_PLC_Coil_Wait_Status_request(previous_cell_number), response_previous_Coil_status_PLC);
+                    else
+                        PLC_CmdSend(send_PLC_Coil_Wait_Status_request(cell_number), response_Coil_status_PLC);
+                    break;
+                default:
+                    product_vending_status.Text = "Error -- " + display_data;
+                    break;
+            }
+
+
+        }
+
+        private static List<byte> ModRTU_CRC(List<byte> data)
+        {
+            List<byte> checksum = new List<byte>();
+            ushort crc = 0xFFFF;
+
+            for (int i = 0; i < data.Count; i++)
+            {
+                crc ^= data[i];          // XOR byte into least sig. byte of crc
+
+                for (int j = 0; j < 8; j++)
+                {    // Loop over each bit
+                    if ((crc & 0x01) == 1)
+                        crc = (ushort)((crc >> 1) ^ 0xA001);                    // Shift right and XOR 0xA001
+                    else                            // Else LSB is not set
+                        crc = (ushort)(crc >> 1);                    // Just shift right
+                }
+            }
+
+            checksum.Add((byte)((crc >> 8) & 0xFF));
+            checksum.Add((byte)(crc & 0xFF));
+            return checksum;
+        }
+
+        private int row_col_covertion(int row, int col)
+        {
+            int coil = ((row - 1) * 8) + col;
+            return coil;
+        }
+
+
+        #endregion
+
+        void button_visible()
+        {
+            btn_category_back.Visibility = Visibility.Visible;
+            btn_exit.Visibility = Visibility.Visible;
+        }
+
+        private void btn_exit_Click(object sender, TouchEventArgs e)
+        {
+            this.NavigationService.Navigate(new _1_Idle());
+            ND.Close();
+            PLC.Close();
+        }
+
+        private void btn_category_back_Click(object sender, TouchEventArgs e)
+        {
+            this.NavigationService.Navigate(new _2_Product_Selection());
+            ND.Close();
+            PLC.Close();
+        }
+    }
+}

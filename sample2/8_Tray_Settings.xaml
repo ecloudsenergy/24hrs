@@ -1,0 +1,131 @@
+﻿<Page x:Class="sample2._8_Tray_Settings"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:sample2"
+      mc:Ignorable="d" 
+      d:DesignHeight="800" d:DesignWidth="800"
+      Title="_8_Tray_Settings">
+
+    <Page.Resources>
+
+        <Style TargetType="Button" >
+            <Setter Property="BorderThickness" Value="4"/>
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="FontFamily" Value="Baskerville Old Face"/>
+            <Setter Property="Foreground" Value="OliveDrab"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="Template">
+
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="10" BorderBrush="OliveDrab" BorderThickness="{TemplateBinding BorderThickness}" >
+                            <Grid Background="LightGray">
+                                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Content="{TemplateBinding Content}" />
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Button.Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" Direction="320" ShadowDepth="3" BlurRadius="5" Opacity="0.5" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="BorderThickness" Value="4"/>
+                    <Setter Property="FontSize" Value="30"/>
+                    <Setter Property="FontWeight" Value="ExtraBold"/>
+                    <Setter Property="FontFamily" Value="Baskerville Old Face"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Height" Value="60"/>
+                    <Setter Property="Width" Value="200"/>
+                    <Setter Property="Template">
+
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border CornerRadius="10" BorderBrush="OliveDrab" BorderThickness="{TemplateBinding BorderThickness}">
+                                    <Grid Background="OliveDrab">
+                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Content="{TemplateBinding Content}" />
+                                    </Grid>
+
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+    </Page.Resources>
+
+
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="6*" />
+            <RowDefinition Height="*" />
+
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Canvas >
+                <Image Source="/images/24hrs Yellow with green background.png" Height="100" Width="200" Canvas.Right="10" Canvas.Top="10"/>
+                <Image Source="/images/eClouds Logo.png" Height="100" Width="200" Canvas.Left="20" Canvas.Top="10"/>
+            </Canvas>
+            <TextBlock HorizontalAlignment="Center" Margin="0,50,0,0" FontSize="30" FontWeight="ExtraBold" Foreground="Maroon" TextDecorations="Underline" > Tray Settings</TextBlock>
+        </Grid>
+
+
+        <Grid x:Name="TTgridbox" Grid.Row="1"  >
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+
+
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="1" Height="2" Background="Black"/>
+            <Grid Grid.Row="3" Height="2" Background="Black"/>
+            <Grid Grid.Row="5" Height="2" Background="Black"/>
+            <Grid Grid.Row="7" Height="2" Background="Black"/>
+            <Grid Grid.Row="9" Height="2" Background="Black"/>
+            <Grid Grid.Row="11" Height="2" Background="Black"/>
+            <Grid Grid.Row="13" Height="2" Background="Black"/>
+            <Grid Grid.Row="15" Height="2" Background="Black"/>
+            <Grid Grid.Row="17" Height="2" Background="Black"/>
+
+
+
+        </Grid>
+        <Grid Grid.Row="2">
+            <Button Content="Back" HorizontalAlignment="Left" Margin="60,0,0,30" Click="Cancel_GoBack" />
+            <Button Content="Refresh" HorizontalAlignment="Right" Margin="0,0,60,30" Click="Refresh_Click" />
+        </Grid>
+
+    </Grid>
+</Page>
+

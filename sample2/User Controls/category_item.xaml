@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="sample2.User_Controls.category_item"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:sample2.User_Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <SolidColorBrush Color="White" Opacity="0.30" x:Key="product_shade"/>
+        <SolidColorBrush Color="Black" Opacity="0.50" x:Key="product_sold_out"/>
+    </UserControl.Resources>
+    <Grid Margin="50,50,0,0" Background="Transparent" Height="auto" Width="auto" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Border Width="190"
+                Height="210"
+            CornerRadius="50"
+                BorderBrush="OliveDrab"
+                BorderThickness="3"
+                Padding="2" >
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Border.Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="Black" Direction="-90" ShadowDepth="4" BlurRadius="5" Opacity="0.5" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                
+            </Border.Style>
+            
+            <Border.Background>
+                        <LinearGradientBrush StartPoint="1,0" EndPoint="1,1">
+                         
+                            <GradientStop Color="White" Offset="0" />
+                            <GradientStop x:Name="gradient_color" Color="LightBlue" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="10">
+                <Image x:Name="category_image" Height="100" Source="/images/all products.png"></Image>
+                <TextBlock x:Name="category_name" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="24" Foreground="Navy" FontWeight="ExtraBold" HorizontalAlignment="Center"> All Products</TextBlock>
+            </StackPanel>
+            
+
+           
+        </Border>
+
+
+    </Grid>
+</UserControl>

@@ -1,0 +1,160 @@
+﻿<Page x:Class="sample2._20_UPI_Payment"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:sample2"
+      xmlns:buttons="clr-namespace:sample2.User_Controls"
+       xmlns:gif="http://wpfanimatedgif.codeplex.com"
+      mc:Ignorable="d" 
+       d:DesignHeight="1000" d:DesignWidth="1000"
+      Title="UPI_Payment">
+
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="1,0" EndPoint="1,1">
+
+                <GradientStop Color="White" Offset="0" />
+                <GradientStop x:Name="gradient_color" Color="LightYellow" Offset="1.0" />
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1.2*"/>
+            <RowDefinition Height="0.3*"/>
+            <RowDefinition Height="7*"/>
+
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Canvas >
+                <Image Source="/images/24hrs Yellow with green background.png" Height="100" Width="200" Canvas.Right="10" Canvas.Top="10"/>
+                <Image Source="/images/eClouds Logo.png" Height="100" Width="200" Canvas.Left="20" Canvas.Top="10"/>
+            </Canvas>
+            <StackPanel Orientation="Vertical" Margin="0,40,0,0">
+                <TextBlock Width="600" FontSize="34" TextWrapping="Wrap" FontWeight="ExtraBold" Foreground="Maroon" TextAlignment="Center"> UPI QR</TextBlock>
+            </StackPanel>
+
+        </Grid>
+
+
+
+        <Grid Grid.Row="2">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10*"/>
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" >
+
+                    <Border Margin="50" Height="auto" Width="auto"
+            CornerRadius="6"
+                BorderBrush="OliveDrab"
+                BorderThickness="3"
+                Padding="2" Background="LightGray">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="8*"/>
+                                <RowDefinition Height="2*"/>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
+                                <TextBlock Margin="15" TextAlignment="Center" x:Name="message_display" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="30" FontWeight="Bold"
+                                       Foreground="Navy"> Sample Text</TextBlock>
+                            </Grid>
+                            <Grid Grid.Row="1">
+                                <Image Height="200" Width="200" x:Name="QR" Source="https://pg.credopay.in/credopaylogin/merchupiQR/Dqrimg2BFULHXKEzE0010529@CUB.png" Visibility="Visible" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                <Image x:Name="Loading_gif" Height="150" gif:ImageBehavior.AnimatedSource="/images/loading.gif" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock VerticalAlignment="Center" Margin="15" TextAlignment="Center" x:Name="transaction_message_display" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="30" FontWeight="Bold"
+                                       Foreground="Green" Visibility="Hidden">Success!!</TextBlock>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Grid.Row="1">
+                    <StackPanel.Background>
+                        <LinearGradientBrush StartPoint="1,0" EndPoint="1,1">
+
+                            <GradientStop Color="White" Offset="0" />
+                            <GradientStop Color="LightYellow" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </StackPanel.Background>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Border.Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="Black" Direction="90" ShadowDepth="4" BlurRadius="5" Opacity="0.5" />
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+
+                    </StackPanel.Style>
+                    <buttons:Navigation_Buttons x:Name="btn_exit" Height="60" Width="200" Margin="50,20,0,0" VerticalAlignment="Top" Visibility="Visible"/>
+                    <buttons:Navigation_Buttons x:Name="btn_category_back" Height="60" Width="200" Margin="50,20,0,0" VerticalAlignment="Top" Visibility="Visible"/>
+
+                </StackPanel>
+            </Grid>
+
+            <Image Grid.Column="1" Height="800" Margin="0,0,0,0" Source="/images/separator.png" />
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="8*"/>
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="9*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Vertical">
+                        <TextBlock FontWeight="ExtraBold" Margin="10,10,0,0" 
+                                   FontSize="32"  Foreground="Maroon" TextAlignment="Center">Cart</TextBlock>
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="cart" Orientation="Vertical" Margin="0,0,20,0">
+                            <!-- TODO: Need to finish this dynamically -->
+
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                </Grid>
+
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" Grid.Row="1">
+                    <StackPanel Orientation="Horizontal" Margin="0,20,0,0" >
+                        <TextBlock FontSize="20" FontWeight="Bold">Order Quantity:</TextBlock>
+                        <TextBlock x:Name="order_quantity" Margin="10,0,0,0" FontSize="20" FontWeight="Bold">0</TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,20,0,0" >
+                        <TextBlock FontSize="20" FontWeight="Bold" MouseDown="goto_next_screen_MouseDown"><Run Text="Order Amount:"/></TextBlock>
+                        <TextBlock x:Name="order_amount" Margin="10,0,0,0" FontSize="20" FontWeight="Bold"><Run Text="Rs. 0"/></TextBlock>
+                    </StackPanel>
+
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <StackPanel x:Name="Navigation_Path" Background="AliceBlue" Orientation="Horizontal" Grid.Row="1">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Border.Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="Black" Direction="-90" ShadowDepth="4" BlurRadius="5" Opacity="0.5" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+            </StackPanel.Style>
+            <TextBlock FontSize="24" FontWeight="Bold" TextDecorations="Underline" Margin="20,0,0,0"> UPI Payment</TextBlock>
+            <TextBlock x:Name="Navigation_Path_arrow"  FontSize="24" FontWeight="Bold" Margin="0,0,0,0" Visibility="Hidden"> -></TextBlock>
+            <TextBlock x:Name="Navigation_Path_category_name" FontSize="24" FontWeight="Bold" TextDecorations="Underline" Margin="0,0,0,0" Visibility="Hidden"> All Products</TextBlock>
+        </StackPanel>
+    </Grid>
+</Page>

@@ -1,0 +1,55 @@
+﻿<Page x:Class="sample2._19_Bill_Printing"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:sample2"
+      mc:Ignorable="d" 
+      d:DesignHeight="1000" d:DesignWidth="1000"
+      Title="_19_Bill_Printing">
+
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="1,0" EndPoint="1,1">
+
+                <GradientStop Color="White" Offset="0" />
+                <GradientStop x:Name="gradient_color" Color="LightYellow" Offset="1.0" />
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1.2*"/>
+            <RowDefinition Height="0.3*"/>
+            <RowDefinition Height="7*"/>
+
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Canvas >
+                <Image Source="/images/24hrs Yellow with green background.png" Height="100" Width="200" Canvas.Right="10" Canvas.Top="10"/>
+                <Image Source="/images/eClouds Logo.png" Height="100" Width="200" Canvas.Left="20" Canvas.Top="10"/>
+            </Canvas>
+           
+
+        </Grid>
+        <StackPanel x:Name="Navigation_Path" Background="AliceBlue" Orientation="Horizontal" Grid.Row="1">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Border.Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="Black" Direction="-90" ShadowDepth="4" BlurRadius="5" Opacity="0.5" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+            </StackPanel.Style>
+            <TextBlock FontSize="24" FontWeight="Bold" TextDecorations="Underline" Margin="20,0,0,0"> </TextBlock>
+      
+        </StackPanel>
+        <StackPanel x:Name="view" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock FontSize="36" FontWeight="Bold" Margin="0,0,0,0" VerticalAlignment="Center"
+                   HorizontalAlignment="Center"  Visibility="Visible" Foreground="Red"> Thank You For Choosing Us!!</TextBlock>
+            <TextBlock FontSize="30" FontWeight="Bold" Margin="0,10,0,0" VerticalAlignment="Center"
+                   HorizontalAlignment="Center"  Visibility="Visible" Foreground="Navy"> Please collect the product, the bill and the change.</TextBlock>
+        </StackPanel>
+        
+    </Grid>
+</Page>

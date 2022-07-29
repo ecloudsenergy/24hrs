@@ -1,0 +1,221 @@
+﻿<Page x:Class="sample2._9_Coin_Refill"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:sample2"
+      mc:Ignorable="d" 
+      d:DesignHeight="1000" d:DesignWidth="1000"
+      Title="_9_Coin_Refill">
+
+    <Page.Resources>
+
+        <Style TargetType="Button" >
+            <Setter Property="BorderThickness" Value="4"/>
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="FontFamily" Value="Baskerville Old Face"/>
+            <Setter Property="Foreground" Value="OliveDrab"/>
+            <Setter Property="Height" Value="80"/>
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="Template">
+
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="10" BorderBrush="OliveDrab" BorderThickness="{TemplateBinding BorderThickness}" >
+                            <Grid Background="LightGray">
+                                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Content="{TemplateBinding Content}" />
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Button.Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" Direction="320" ShadowDepth="3" BlurRadius="5" Opacity="0.5" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderThickness" Value="4"/>
+                    <Setter Property="FontSize" Value="30"/>
+                    <Setter Property="FontWeight" Value="ExtraBold"/>
+                    <Setter Property="FontFamily" Value="Baskerville Old Face"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Height" Value="80"/>
+                    <Setter Property="Width" Value="200"/>
+                    <Setter Property="Template">
+
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border CornerRadius="10" BorderBrush="OliveDrab" BorderThickness="{TemplateBinding BorderThickness}">
+                                    <Grid Background="OliveDrab">
+                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Content="{TemplateBinding Content}" />
+                                    </Grid>
+
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="7*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Canvas >
+                <StackPanel Canvas.Right="10">
+                    <Image Source="/images/24hrs Yellow with green background.png" Height="100" Width="200" Canvas.Right="10" Canvas.Top="10"/>
+                    <TextBlock Name="Time" Grid.Column="2" Grid.Row="0" FontSize="20" FontWeight="Bold" Foreground="Red"  Canvas.Bottom="10" Canvas.Right="10" />
+                </StackPanel>
+                <Image Source="/images/eClouds Logo.png" Height="100" Width="200" Canvas.Left="20" Canvas.Top="10"/>
+            </Canvas>
+            <TextBlock FontSize="40" VerticalAlignment="Bottom" TextDecorations="Underline" Foreground="Maroon" FontWeight="ExtraBold"  HorizontalAlignment="Center"  FontFamily="Baskerville Old Face"> Coin Dispenser Refill</TextBlock>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" FontSize="30" Foreground="Maroon" 
+                           FontWeight="ExtraBold" FontFamily="Baskerville Old Face" >Denomination:</TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" FontSize="30" Foreground="Maroon" 
+                           FontWeight="ExtraBold" FontFamily="Baskerville Old Face" >User Name:</TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" FontSize="30" Foreground="Maroon" 
+                           FontWeight="ExtraBold" FontFamily="Baskerville Old Face" >Transaction Type:</TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" FontSize="30" Foreground="Maroon" 
+                           FontWeight="ExtraBold" FontFamily="Baskerville Old Face" >Invoice / Request No.:</TextBlock>
+
+
+
+
+
+
+
+                <Border x:Name="parent" Grid.Column="2" Grid.Row="0"  VerticalAlignment="Center" CornerRadius="6" BorderBrush="Gray" 
+                        BorderThickness="4" >
+
+                    <TextBox FontSize="30" IsEnabled="False" Background="Silver" TextAlignment="Right" FontFamily="Baskerville Old Face" x:Name="DenominationTxt" FontWeight="DemiBold" ></TextBox>
+
+                </Border>
+                <Border Grid.Column="2" Grid.Row="1"  VerticalAlignment="Center" CornerRadius="6" BorderBrush="Gray" 
+                         BorderThickness="4" >
+
+                    <TextBlock FontSize="30" Background="Silver" IsEnabled="False" FontFamily="Baskerville Old Face" x:Name="UserNameTxt"></TextBlock>
+
+                </Border>
+                <Border Grid.Column="2" Grid.Row="2"  VerticalAlignment="Center" CornerRadius="6" BorderBrush="Gray" 
+                        Background="White" BorderThickness="4" >
+
+                    <ComboBox x:Name="TransactionTypeTxt" FontSize="30"  FontFamily="Baskerville Old Face">
+                        <ComboBoxItem IsSelected="True" Foreground="Green">Credit</ComboBoxItem>
+                        <ComboBoxItem Foreground="Red" >Debit</ComboBoxItem>
+
+                    </ComboBox>
+
+                </Border>
+                <Border Grid.Column="2" Grid.Row="3"  VerticalAlignment="Center" CornerRadius="6" BorderBrush="Gray" 
+                        Background="White" BorderThickness="4" >
+
+                    <TextBox FontSize="30" TextAlignment="Right" FontFamily="Baskerville Old Face" x:Name="Invoice_Req_No" ></TextBox>
+
+                </Border>
+
+
+
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+
+
+
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" FontSize="30" Foreground="Maroon" 
+                           FontWeight="ExtraBold" FontFamily="Baskerville Old Face" >Transaction Qty:</TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" FontSize="30" Foreground="Maroon" 
+                           FontWeight="ExtraBold" FontFamily="Baskerville Old Face" >Transaction Amount:</TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" FontSize="30" Foreground="Green" 
+                           FontWeight="ExtraBold" FontFamily="Baskerville Old Face" >Opening Balance Qty:</TextBlock>
+                <TextBlock Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" FontSize="30" Foreground="Green" 
+                           FontWeight="ExtraBold" FontFamily="Baskerville Old Face" >Closing Balance Qty:</TextBlock>
+
+                <Border Grid.Column="2" Grid.Row="0"  VerticalAlignment="Center" CornerRadius="6" BorderBrush="Gray" 
+                        Background="White" BorderThickness="4" >
+
+                    <TextBox FontSize="30" MaxLength="5" TextAlignment="Right" FontFamily="Baskerville Old Face" x:Name="AdditionalCountTxt" TextChanged="AdditionalCountTxt_TextChanged" PreviewTextInput="AdditionalCountTxt_PreviewTextInput"   ></TextBox>
+
+                </Border>
+
+                <Border Grid.Column="2" Grid.Row="1"  VerticalAlignment="Center" CornerRadius="6" BorderBrush="Gray" 
+                        Background="White" BorderThickness="4" >
+
+                    <TextBox FontSize="30" IsEnabled="False" TextAlignment="Right" FontFamily="Baskerville Old Face" x:Name="AdditionalAmountTxt"   ></TextBox>
+
+                </Border>
+                <Border Grid.Column="2" Grid.Row="2"  VerticalAlignment="Center" CornerRadius="6" BorderBrush="Gray" 
+                        Background="White" BorderThickness="4" >
+
+                    <TextBlock FontSize="30" IsEnabled="False" TextAlignment="Right" FontFamily="Baskerville Old Face" x:Name="BalanceAmountTxt"   ></TextBlock>
+
+                </Border>
+                <Border Grid.Column="2" Grid.Row="3"  VerticalAlignment="Center" CornerRadius="6" BorderBrush="Gray" 
+                        Background="White" BorderThickness="4" >
+
+                    <TextBlock FontSize="30" IsEnabled="False" TextAlignment="Right" FontFamily="Baskerville Old Face" x:Name="FinalBalanceAmountTxt" HorizontalAlignment="Right" Width="158"   ></TextBlock>
+
+                </Border>
+
+
+            </Grid>
+            <Grid Grid.Row="2">
+                <Button Margin="100,0,0,0"  VerticalAlignment="Center" HorizontalAlignment="Left" Content="Back" FontSize="30" FontWeight="ExtraBold" Click="Back"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+
+                    
+                    <Button  Margin="100,50,150,50"  VerticalAlignment="Top" HorizontalAlignment="Center" Content="Save" FontSize="30" FontWeight="ExtraBold" Click="Save"/>
+                </StackPanel>
+
+            </Grid>
+
+        </Grid>
+
+
+
+    </Grid>
+
+</Page>

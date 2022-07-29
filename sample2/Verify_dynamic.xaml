@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="sample2.Verify_dynamic"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:sample2"
+             mc:Ignorable="d" 
+             d:DesignHeight="150" d:DesignWidth="510">
+
+    <Grid>
+
+        <Border Margin="0,5,0,0"
+            CornerRadius="6"
+                BorderBrush="Black"
+                BorderThickness="3"
+                Padding="10" >
+            <Border.Background>
+                <LinearGradientBrush StartPoint="1,0" EndPoint="1,1">
+                    <GradientStop Color="White" Offset="0.5" />
+                    <GradientStop Color="BlanchedAlmond" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="1" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="Deno" HorizontalAlignment="Left" Margin="0,0,5,0" FontSize="23" TextWrapping="Wrap" FontWeight="Bold" 
+                                               Foreground="Black" VerticalAlignment="Center"> Denomination</TextBlock>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal"
+                                                Visibility="Visible">
+
+
+
+                        <TextBlock x:Name="Crdqty"   FontSize="22" 
+                                                   TextAlignment="Center" Foreground="Black" FontWeight="Bold" VerticalAlignment="Center" 
+                                                   HorizontalAlignment="Center">Debit</TextBlock>
+
+                    </StackPanel>
+                    <TextBlock Grid.Column="2" x:Name="Dbdqty" FontSize="23" TextWrapping="Wrap" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Right" 
+                                               TextAlignment="Right" VerticalAlignment="Center">Credit</TextBlock>
+
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

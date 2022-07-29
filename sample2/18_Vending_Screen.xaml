@@ -1,0 +1,380 @@
+﻿<Page x:Class="sample2._18_Vending_Screen"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:sample2"
+      mc:Ignorable="d" 
+      d:DesignHeight="1000" d:DesignWidth="1000"
+      Title="_18_Vending_Screen">
+
+    <Page.Resources>
+        <Style TargetType="Button" x:Key="payment">
+            <Setter Property="BorderThickness" Value="4"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="FontFamily" Value="Baskerville Old Face"/>
+            <Setter Property="Foreground" Value="OliveDrab"/>
+            <Setter Property="Height" Value="100"/>
+            <Setter Property="Width" Value="400"/>
+            <Setter Property="Template">
+
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="10" BorderBrush="OliveDrab" BorderThickness="{TemplateBinding BorderThickness}" >
+                            <Grid Background="LightGray">
+                                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Content="{TemplateBinding Content}" />
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Button.Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" Direction="320" ShadowDepth="3" BlurRadius="5" Opacity="0.5" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderThickness" Value="4"/>
+                    <Setter Property="FontSize" Value="26"/>
+                    <Setter Property="FontWeight" Value="ExtraBold"/>
+                    <Setter Property="FontFamily" Value="Baskerville Old Face"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Height" Value="100"/>
+                    <Setter Property="Width" Value="400"/>
+                    <Setter Property="Template">
+
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border CornerRadius="10" BorderBrush="OliveDrab" BorderThickness="{TemplateBinding BorderThickness}">
+                                    <Grid Background="OliveDrab">
+                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Content="{TemplateBinding Content}" />
+                                    </Grid>
+
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+        <Style TargetType="Button" x:Key="others">
+            <Setter Property="BorderThickness" Value="4"/>
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="FontFamily" Value="Baskerville Old Face"/>
+            <Setter Property="Foreground" Value="OliveDrab"/>
+            <Setter Property="Height" Value="80"/>
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="Template">
+
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="10" BorderBrush="OliveDrab" BorderThickness="{TemplateBinding BorderThickness}" >
+                            <Grid Background="LightGray">
+                                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Content="{TemplateBinding Content}" />
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Button.Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" Direction="320" ShadowDepth="3" BlurRadius="5" Opacity="0.5" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderThickness" Value="4"/>
+                    <Setter Property="FontSize" Value="30"/>
+                    <Setter Property="FontWeight" Value="ExtraBold"/>
+                    <Setter Property="FontFamily" Value="Baskerville Old Face"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Height" Value="80"/>
+                    <Setter Property="Width" Value="200"/>
+                    <Setter Property="Template">
+
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border CornerRadius="10" BorderBrush="OliveDrab" BorderThickness="{TemplateBinding BorderThickness}">
+                                    <Grid Background="OliveDrab">
+                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Content="{TemplateBinding Content}" />
+                                    </Grid>
+
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+        <SolidColorBrush x:Key="brushWatermarkBackground" Color="White" />
+        <SolidColorBrush x:Key="brushWatermarkForeground" Color="LightSteelBlue" />
+        <SolidColorBrush x:Key="brushWatermarkBorder" Color="Indigo" />
+
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <local:TextInputToVisibilityConverter x:Key="TextInputToVisibilityConverter" />
+
+        <Style TargetType="TextBox">
+
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="MinHeight" Value="20"/>
+            <Setter Property="MinWidth" Value="250"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border x:Name="border"
+CornerRadius="2"
+BorderBrush="Transparent"
+BorderThickness="1"
+Background="Transparent"
+>
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                Focusable="false"
+                        HorizontalScrollBarVisibility="Hidden"
+                        VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="Black" />
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="true">
+                                <Setter Property="Foreground" Value="Black" />
+                                <Setter Property="FontWeight" Value="Bold" />
+                                <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Page.Resources>
+
+
+    <Grid>
+
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="1,0" EndPoint="1,1">
+                <GradientStop Color="White" Offset="0" />
+                <GradientStop x:Name="gradient_color" Color="LightYellow" Offset="1.0" />
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1.2*"/>
+            <RowDefinition Height="0.3*"/>
+            <RowDefinition Height="7*"/>
+
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Canvas >
+                <Image Source="/images/24hrs Yellow with green background.png" Height="100" Width="200" Canvas.Right="10" Canvas.Top="10"/>
+                <Image Source="/images/eClouds Logo.png" Height="100" Width="200" Canvas.Left="20" Canvas.Top="10"/>
+            </Canvas>
+            <StackPanel Orientation="Vertical" Margin="0,40,0,0">
+                <TextBlock  FontSize="34" FontWeight="ExtraBold" Foreground="Maroon" TextAlignment="Center"> Vending Screen</TextBlock>
+            </StackPanel>
+
+        </Grid>
+
+        <Grid Grid.Row="2">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10*"/>
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
+                <Grid  Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                  
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <TextBlock x:Name="product_vending_status" TextWrapping="Wrap" FontSize="24" Margin="0,0,0,20" FontWeight="Bold" Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Bottom" ></TextBlock>
+                        </Grid>
+                        <StackPanel Grid.Row="1" Height="3" Background="OliveDrab" />
+                        <StackPanel Grid.Row="3" Height="3" Background="OliveDrab" />
+                        <Grid Grid.Row="2">
+                         
+                                <Grid.RowDefinitions>
+                                <RowDefinition Height="1.5*"/>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="2*"/>
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0" >
+                                
+
+                                <Grid.Background>
+                                    <LinearGradientBrush StartPoint="1,0" EndPoint="1,1">
+
+                                        <GradientStop Color="White" Offset="0" />
+                                        <GradientStop Color="LightBlue" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </Grid.Background>
+                                <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="1.5*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Width="3" Background="OliveDrab" />
+                                    <StackPanel Grid.Column="2" Width="3" Background="OliveDrab" />
+                                    <StackPanel Grid.Column="4" Width="3" Background="OliveDrab" />
+                                    <StackPanel Grid.Column="6" Width="3" Background="OliveDrab" />
+                                    <StackPanel Grid.Column="8" Width="3" Background="OliveDrab" />
+                                    <TextBlock Grid.Column="1" Foreground="Navy" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">Product Image</TextBlock>
+                                    <TextBlock Grid.Column="3" Foreground="Navy" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">Product Name</TextBlock>
+                                    <TextBlock Grid.Column="5" Foreground="Navy" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">Order Quantity</TextBlock>
+                                    <TextBlock Grid.Column="7" Foreground="Navy" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">Dispensed Quantity</TextBlock>
+        
+                                </Grid>
+
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="1.5*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Width="3" Background="OliveDrab" />
+                                    <StackPanel Grid.Column="2" Width="3" Background="OliveDrab" />
+                                    <StackPanel Grid.Column="4" Width="3" Background="OliveDrab" />
+                                    <StackPanel Grid.Column="6" Width="3" Background="OliveDrab" />
+                                    <StackPanel Grid.Column="8" Width="3" Background="OliveDrab" />
+                                    <Image Margin="10" Grid.Column="1" x:Name="product_image" ></Image>
+                                    <TextBlock Grid.Column="3" x:Name="product_name" Padding="8" Foreground="Black" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">Product Name</TextBlock>
+                                    <TextBlock Grid.Column="5" x:Name="order_qty" Padding="8" Foreground="Black" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"></TextBlock>
+                                    <TextBlock Grid.Column="7" x:Name="dispensed_qty" Padding="8" Foreground="Black" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"></TextBlock>
+                                </Grid>
+                                <StackPanel Grid.Row="1" Height="3" Background="OliveDrab" />
+                               
+                            </Grid>
+
+                    </Grid>
+
+                </Grid>
+                
+                <StackPanel Orientation="Horizontal" Grid.Row="1">
+                    <StackPanel.Background>
+                        <LinearGradientBrush StartPoint="1,0" EndPoint="1,1">
+
+                            <GradientStop Color="White" Offset="0" />
+                            <GradientStop Color="LightYellow" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </StackPanel.Background>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Border.Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="Black" Direction="90" ShadowDepth="4" BlurRadius="5" Opacity="0.5" />
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+
+                    </StackPanel.Style>
+                    <Button x:Name="btn_exit" Height="60" Margin="50,20,0,0" Style="{StaticResource others}"  VerticalAlignment="Top" Content="Exit" Visibility="Hidden" TouchDown="btn_exit_Click" />
+                    <Button x:Name="btn_category_back" Margin="50,20,0,0"  Style="{StaticResource others}"  VerticalAlignment="Top" Height="60" Content="Back" Visibility="Hidden" TouchDown="btn_category_back_Click"/>
+
+                </StackPanel>
+            </Grid>
+
+            <Image Grid.Column="1" Height="800" Margin="0,0,0,0" Source="/images/separator.png" />
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="8*"/>
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="9*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Vertical">
+                        <TextBlock FontWeight="ExtraBold" Margin="10,10,0,0" 
+                                  FontSize="32" Foreground="Maroon" TextAlignment="Center">Cart</TextBlock>
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="cart" Orientation="Vertical" Margin="0,0,20,0">
+                            <!-- TODO: Need to finish this dynamically -->
+
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                </Grid>
+
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" Grid.Row="1">
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
+                        <TextBlock FontSize="20" FontWeight="Bold">Order Quantity:</TextBlock>
+                        <TextBlock x:Name="order_quantity" Margin="10,0,0,0" FontSize="20" FontWeight="Bold">0</TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
+                        <TextBlock FontSize="20" FontWeight="Bold">Order Amount:</TextBlock>
+                        <TextBlock x:Name="order_amount" Margin="10,0,0,0" FontSize="20" FontWeight="Bold">Rs. 0</TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
+                        <TextBlock FontSize="20" FontWeight="Bold">Amount Paid:</TextBlock>
+                        <TextBlock x:Name="amount_paid" Margin="10,0,0,0" FontSize="20" FontWeight="Bold">Rs. 0</TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <StackPanel x:Name="Navigation_Path" Background="AliceBlue" Orientation="Horizontal" Grid.Row="1">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Border.Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="Black" Direction="-90" ShadowDepth="4" BlurRadius="5" Opacity="0.5" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+            </StackPanel.Style>
+            <TextBlock FontSize="24" FontWeight="Bold" TextDecorations="Underline" Margin="20,0,0,0"> Vending Screen</TextBlock>
+            <TextBlock x:Name="Navigation_Path_arrow"  FontSize="24" FontWeight="Bold" Margin="0,0,0,0" Visibility="Hidden"> -></TextBlock>
+            <TextBlock x:Name="Navigation_Path_category_name" FontSize="24" FontWeight="Bold" TextDecorations="Underline" Margin="0,0,0,0" Visibility="Hidden"> All Products</TextBlock>
+        </StackPanel>
+      
+    </Grid>
+</Page>
+

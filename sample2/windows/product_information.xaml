@@ -1,0 +1,63 @@
+﻿<Window x:Class="sample2.product_information"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:sample2"
+        xmlns:buttons="clr-namespace:sample2.User_Controls"
+        mc:Ignorable="d"
+        Title="product_information" WindowStartupLocation="CenterScreen" WindowStyle="None"
+         SizeToContent="WidthAndHeight" MouseDown="Window_MouseDown" TouchDown="Window_TouchDown">
+   
+    
+    <Border Height="300" Width="300"
+            CornerRadius="6"
+                BorderBrush="OliveDrab"
+                BorderThickness="3"
+                Padding="2" 
+                    Background="LightGray">
+        <Grid  >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border 
+            CornerRadius="6"
+                BorderBrush="Maroon"
+                BorderThickness="2"
+                Margin="5"
+                    Grid.Row="0" Background="White">
+                    <Image x:Name="product_Image" Source="/images/24hrs Yellow with green background.png" />
+                </Border>
+            </Grid>
+            <StackPanel Grid.Column="1" Background="OliveDrab" Width="1"/>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="4*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <ScrollViewer Focusable="False" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"  >
+                    <StackPanel Orientation="Vertical" >
+                        <TextBlock Margin="10,10,10,0" FontSize="14" FontWeight="Bold">Product Name:</TextBlock>
+                        <TextBlock Margin="20,0,10,0" TextWrapping="Wrap"  FontSize="14" x:Name="product_Name" >Amuthanjan</TextBlock>
+                        <TextBlock Margin="10,10,10,0" FontSize="14" FontWeight="Bold">Product Description:</TextBlock>
+                        <TextBlock Margin="20,0,10,0" FontSize="14" TextWrapping="Wrap" x:Name="product_Des" >Amuthanjan is good for head and it cure all diseases Amuthanjan is good for head and it cure all diseases</TextBlock>
+                        <TextBlock Margin="10,10,10,0" FontSize="14" FontWeight="Bold">Expiry Date:</TextBlock>
+                        <TextBlock Margin="20,0,10,0" TextWrapping="Wrap"  FontSize="14" x:Name="product_Exp_Date" >Dec 2021</TextBlock>
+                        <TextBlock Margin="10,10,10,0" FontSize="14" FontWeight="Bold">Price:</TextBlock>
+                        <TextBlock Margin="20,0,10,0" TextWrapping="Wrap"  FontSize="14" x:Name="product_Rate" >Rs. 20</TextBlock>
+                    </StackPanel>
+                </ScrollViewer>
+                <buttons:Navigation_Buttons Grid.Row="1" Width="100" x:Name="close" Height="30" FontSize="14"/>
+                <!--<Button Grid.Row="1" Width="80" x:Name="close" Height="40" FontSize="14" Content="Close" Click="close_Click"/>-->
+            </Grid>
+
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,230 @@
+﻿using sample2.models;
+using sample2.remote;
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using ToastNotifications;
+using ToastNotifications.Lifetime;
+using ToastNotifications.Position;
+using ToastNotifications.Messages;
+using System.Windows.Threading;
+using sample2.helpers;
+
+namespace sample2
+{
+    /// <summary>
+    /// Interaction logic for _15_Cash_Acceptor_Log.xaml
+    /// </summary>
+    public partial class _15_Cash_Acceptor_Log : Page
+    {
+
+        Page previous_page;
+        
+        LogModel user_details = SqliteDataAccess.getLastLogEvent();
+        DenominationRecords records = new DenominationRecords();
+        int balance_amount;
+        List<int> balance_nos_all;
+        List<int> denominations = new List<int>();
+        private static readonly Regex _regex = new Regex("[^0-9.-]+"); //regex that matches disallowed text
+        private static TimeZoneInfo INDIAN_ZONE = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+        DateTime indianTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, INDIAN_ZONE);
+
+
+        static Notifier noti = new Notifier(cfg =>
+        {
+            cfg.PositionProvider = new WindowPositionProvider(
+                parentWindow: Application.Current.MainWindow,
+                corner: Corner.BottomCenter,
+                offsetX: 10,
+                offsetY: 10);
+
+            cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(
+                notificationLifetime: TimeSpan.FromSeconds(2),
+                maximumNotificationCount: MaximumNotificationCount.FromCount(5));
+
+            cfg.Dispatcher = Application.Current.Dispatcher;
+        });
+
+        public _15_Cash_Acceptor_Log(Page previous_page)
+        {
+            InitializeComponent();
+            this.previous_page = previous_page;
+            this.username.Text = user_details.LT_username;
+            routines.Denominations(denominations);
+            records = SqliteDataAccess.getAllDenominationDetails(denominations);
+            balance_nos_all = records.Balance_Nos;
+            balance_amount = records.Total_Balance;
+            this.Balance.Text = "" + balance_amount;
+            startClock();
+        }
+     
+
+        private void startClock()
+        {
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += tick_event;
+            timer.Start();
+        }
+
+        private void tick_event(object sender, EventArgs e)
+        {
+            this.Time_Now.Text = indianTime.ToShortDateString() + " " + indianTime.ToShortTimeString() + " hrs";
+        }
+
+
+
+       
+        private static bool IsTextAllowed(string text)
+        {
+            return !_regex.IsMatch(text);
+        }
+
+        private void Back_Button(object sender, RoutedEventArgs e)
+        {
+            this.NavigationService.Navigate(previous_page);
+        }
+
+        private void number_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !IsTextAllowed(e.Text);
+        }
+
+        private void input_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            int removed_nos = 0;
+            TextBox input = sender as TextBox;
+            string[] names = input.Name.Split('_');
+            if (input.Text == "") removed_nos = 0;
+            else removed_nos = Int32.Parse(input.Text);
+            if (balance_nos_all.Count > 0)
+                calculate(names[2], removed_nos, input);
+            else
+            {
+                noti.ShowError("No Balance Notes Available!");
+                //MessageBox.Show("No Balance Notes Available!", "Alert", MessageBoxButton.OK, MessageBoxImage.Error);
+                input.Text = "";
+            }
+        }
+
+        private void calculate(string code, int removed_nos, TextBox input)
+        {
+            TextBox Removed_Amount = (TextBox)this.FindName("removed_amount_" + code);
+            int denomination = Int32.Parse(code);
+
+
+                int balance_nos = balance_nos_all[denominations.IndexOf(denomination)] - removed_nos;
+                if (balance_nos >= 0)
+                {
+                    int removed_amount = removed_nos * denomination;
+                    Removed_Amount.Text = "" + removed_amount;
+                    int total_removed_amount = 0;
+                    for (int i = 0; i < denominations.Count; i++)
+                    {
+                        TextBox Removed_Amount_Individual = (TextBox)this.FindName("removed_amount_" + denominations[i]);
+
+                        total_removed_amount += Int32.Parse(Removed_Amount_Individual.Text);
+                    }
+
+
+                    this.total_removed_amount.Text = "" + total_removed_amount;
+                    int final_balance = this.balance_amount - total_removed_amount;
+                    this.Final_Balance.Text = "" + final_balance;
+                input.Background = new SolidColorBrush(Colors.Transparent);
+            }
+              
+            else
+                    input.Background = new SolidColorBrush(Colors.LightSalmon);
+
+        }
+
+        private void Save_Button(object sender, RoutedEventArgs e)
+        {
+            bool error = false;
+            if (this.Request_No.Text == "") noti.ShowError("Please enter the request number.");
+            else
+            {
+                for (int i = 0; i < denominations.Count; i++)
+                {
+                    TextBox Removed_Nos_Individual = (TextBox)this.FindName("removed_nos_" + denominations[i]);
+                    SolidColorBrush background = Removed_Nos_Individual.Background as SolidColorBrush;
+
+                    if (Colors.LightSalmon.Equals(background.Color))
+                    {
+                        error = true;
+                        break;
+                    }
+                }
+
+                if (error || balance_nos_all.Count == 0)
+                {
+                    noti.ShowError("Fill Correct Data! Change Highlighted TextBox!");
+                    //MessageBox.Show("Fill Correct Data! Change Highlighted TextBox!", "Alert", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else
+                {
+                    int saved_successfully = 0;
+                    int attempted = 0;
+                    for (int i = 0; i < denominations.Count; i++)
+                    {
+                        TextBox Removed_Amount_Individual = (TextBox)this.FindName("removed_amount_" + denominations[i]);
+                        TextBox Removed_Nos_Individual = (TextBox)this.FindName("removed_nos_" + denominations[i]);
+                        NoteAcceptorModel noteLog = new NoteAcceptorModel();
+                        if (Removed_Amount_Individual.Text == "") noteLog.NA_Amount = 0;
+                        else
+                            noteLog.NA_Amount = Int32.Parse(Removed_Amount_Individual.Text);
+
+                        if (noteLog.NA_Amount > 0)
+                        {
+                            String formatdate = indianTime.ToString("yyyy-MM-dd HH:mm:SS");
+                            noteLog.NA_Balance = (balance_nos_all[denominations.IndexOf(denominations[i])] * denominations[i]) - noteLog.NA_Amount;
+                            noteLog.NA_Denomination = denominations[i];
+                            noteLog.NA_Quantity = noteLog.NA_Balance / denominations[i];
+                            noteLog.NA_TransactionID = user_details.LT_username;
+                            saved_successfully += SqliteChange.CurrencyTransactionDetails(noteLog.NA_Denomination, this.Request_No.Text, Int32.Parse(Removed_Nos_Individual.Text),
+                                formatdate, SqliteDataAccess.getLastLogEvent().LT_username, "Debit", balance_nos_all[denominations.IndexOf(denominations[i])],
+                                noteLog.NA_Quantity, "BA");
+                            attempted++;
+                        }
+
+                    }
+                    if (saved_successfully != attempted && attempted != 0)
+                    {
+                        noti.ShowError("Save Failed.");
+                        //MessageBox.Show("Save Failed.");
+                    }
+
+                    else if (attempted == 0)
+                    {
+                        noti.ShowError("Please enter atleast one field.");
+                        //MessageBox.Show("Please enter atleast one field.");
+                    }
+                    else
+                    {
+                        noti.ShowSuccess("Saved Successfully.");
+                        //MessageBox.Show("Saved Successfully.");
+                        this.NavigationService.Navigate(new _15_Cash_Acceptor_Log(previous_page));
+
+                    }
+                }
+            }
+        }
+
+        private void Reset_Button(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < denominations.Count; i++)
+            {
+                TextBox Removed_Nos_Individual = (TextBox)this.FindName("removed_nos_" + denominations[i]);
+                TextBox Removed_Amount_Individual = (TextBox)this.FindName("removed_amount_" + denominations[i]);
+                Removed_Nos_Individual.Text = "";
+                Removed_Amount_Individual.Text = "0";
+            }
+            this.total_removed_amount.Text = "";
+            this.Final_Balance.Text = "0";
+        }
+    }
+}

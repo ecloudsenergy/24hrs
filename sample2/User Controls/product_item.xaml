@@ -1,0 +1,61 @@
+﻿<UserControl x:Class="sample2.User_Controls.product_item"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:sample2.User_Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <SolidColorBrush Color="White" Opacity="0.30" x:Key="product_shade"/>
+        <SolidColorBrush Color="Black" Opacity="0.50" x:Key="product_sold_out"/>
+    </UserControl.Resources>
+    <WrapPanel Orientation="Vertical" Margin="50,50,0,0" Height="auto" Width="auto" >
+        <Border Width="140"
+            CornerRadius="6"
+                BorderBrush="OliveDrab"
+                BorderThickness="3"
+                Padding="2" >
+            <Grid Height="auto" Width="auto">
+                <StackPanel Orientation="Horizontal" Background="White">
+                    <Image x:Name="Product_image" Height="150" Width="130" HorizontalAlignment="Center"/>
+                </StackPanel>
+                
+                
+                <StackPanel x:Name="sold_out_strip" Orientation="Vertical" Height="150" Width="130"  Background="{StaticResource product_shade}" Visibility="Visible">
+                    <TextBlock Background="{StaticResource product_sold_out}" Margin="0,65,0,0" Width="130" TextAlignment="Center" FontSize="20" Foreground="White" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"> Sold Out</TextBlock>
+                </StackPanel>
+
+                <StackPanel x:Name="quantity_strip" Orientation="Horizontal" Height="150" Width="130"  Background="{StaticResource product_shade}" Visibility="Visible">
+                    <local:Navigation_Buttons Height="40" Width="40" x:Name="btn_sub"/>
+
+                    <TextBlock x:Name="Product_quantity" Height="40" Width="50" Background="{StaticResource product_sold_out}" Padding="12"  TextAlignment="Center" Foreground="White" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center">1</TextBlock>
+                    <local:Navigation_Buttons Height="40" Width="40" x:Name="btn_add"/>
+                </StackPanel>
+                <StackPanel x:Name="instruction_strip" Orientation="Vertical" Height="150" Width="130"  Visibility="Visible">
+                    <TextBlock x:Name="instruction" Background="{StaticResource product_sold_out}" TextWrapping="Wrap" Width="130" TextAlignment="Center" FontSize="14" Foreground="White" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"> Press here for more information</TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <Border Width="140"
+            CornerRadius="6"
+                BorderBrush="OliveDrab"
+                Background="LightGray"
+                BorderThickness="3"
+                Padding="2">
+            <WrapPanel Height="auto">
+                <TextBlock TextAlignment="Center" x:Name="Product_Name" TextWrapping="Wrap" Width="130" FontSize="14">
+                Amurthanjan 
+                </TextBlock>
+
+                <TextBlock TextAlignment="Center" x:Name="Product_price" TextWrapping="Wrap" Width="130" FontSize="14">
+                Rs. 10
+                </TextBlock>
+
+            </WrapPanel>
+
+        </Border>
+
+
+    </WrapPanel>
+</UserControl>
